@@ -1,6 +1,6 @@
 $(function(){
 
-//    var userName = 'Юзер';
+    var userName = 'Юзер';
 
     let initChat = function() {
         loadMessages();
