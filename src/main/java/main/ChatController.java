@@ -6,19 +6,23 @@ import main.repos.MessageRepository;
 import main.repos.UserRepository;
 import main.response.AddMessageResponse;
 import main.response.AuthResponse;
+import main.response.MessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class ChatController {
 
     @Autowired
@@ -29,7 +33,7 @@ public class ChatController {
 
     private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy");
 
-    @PostMapping(path = "/api/users")
+    @PostMapping(path = "/users")
     public HashMap<String, Boolean> addUser(HttpServletRequest request) {
         String name = request.getParameter("name");
         String sessionId = getSessionId();
@@ -46,12 +50,12 @@ public class ChatController {
         return response;
     }
 
-    @GetMapping(path = "/api/users")
+    @GetMapping(path = "/users")
     public Iterable<User> showUsers() {
         return userRepository.findAll();
     }
 
-    @PostMapping(path = "/api/messages")
+    @PostMapping(path = "/messages")
     public AddMessageResponse addMessage(HttpServletRequest request) {
         String text = request.getParameter("text");
 
@@ -71,7 +75,7 @@ public class ChatController {
         return response;
     }
 
-    @GetMapping(path = "/api/auth")
+    @GetMapping(path = "/auth")
     public AuthResponse auth() {
         AuthResponse response = new AuthResponse();
         String sessionId = getSessionId();
@@ -81,6 +85,20 @@ public class ChatController {
             response.setName(user.getName());
         }
         return response;
+    }
+
+    @GetMapping(path = "/messages")
+    public List<MessageResponse> getMessages() {
+        ArrayList<MessageResponse> messagesList = new ArrayList<>();
+        Iterable<Message> messages = messageRepository.findAll();
+        for (Message message : messages) {
+            MessageResponse messageItem = new MessageResponse();
+            messageItem.setName(message.getUser().getName());
+            messageItem.setTime(formatter.format(message.getTime()));
+            messageItem.setText(message.getMessage());
+            messagesList.add(messageItem);
+        }
+        return messagesList;
     }
 
     private String getSessionId() {
